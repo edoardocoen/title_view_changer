@@ -8,6 +8,7 @@ import google_auth_oauthlib.flow
 from googleapiclient.discovery import build
 from googleapiclient.errors import HttpError
 from google_auth_oauthlib.flow import InstalledAppFlow
+import threading
 
 #https://www.youtube.com/watch?v=
 
@@ -37,20 +38,24 @@ def update_video(youtube, vid_id, viewcount):
         part='snippet'
     ).execute()
     videos_list_snippet = videos_list_response['items'][0]['snippet']
-    videos_list_snippet['title'] = 'This video has : ' + str(viewcount) + " views"
+    videos_list_snippet['title'] = 'questo video ha : ' + str(viewcount) + " visualizzazioni?"
     videos_update_response = youtube.videos().update(
         part='snippet',
         body=dict(
         snippet=videos_list_snippet,
         id=vid_id
     )).execute()
+    
+def redoit():
+    threading.Timer(5.0, redoit).start()
+    try:
+        views = get_viewcount(video_id)
+        update_video(youtube, video_id, views)
+        print('Titolo del video aggiornato con: questo video ha '+ str(views) + 'visualizzazioni?')
+    except Exception as e:
+        print(e)
 
 if __name__ == "__main__":
     youtube = get_authenticated_service()
     video_id = input('Please enter video id : ')
-    try:
-        views = get_viewcount(video_id)
-        update_video(youtube, video_id, views)
-        print('Video title updated to : This video has : '+ str(views) + 'views')
-    except Exception as e:
-        print(e)
+    redoit()
